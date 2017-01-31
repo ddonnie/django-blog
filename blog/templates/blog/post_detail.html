@@ -9,7 +9,7 @@
         {% else %}
             <a class="btn btn-default" href="{% url 'post_publish' pk=post.pk %}">Publish</a>
         {% endif %}
-        {% if user.is_authenticated %}
+        {% if user == post.author %}
             <a class="btn btn-default" href="{% url 'post_edit' pk=post.pk %}"><span class="glyphicon glyphicon-pencil"></span></a>
             <a class="btn btn-default" href="{% url 'post_remove' pk=post.pk %}"><span class="glyphicon glyphicon-remove"></span></a>
         {% else %}
@@ -21,22 +21,33 @@
         <p>{{ post.text|linebreaksbr }}</p>
     </div>
     <hr>
+    {% if user.is_authenticated %}
     <a class="btn btn-default" href="{% url 'add_comment_to_post' pk=post.pk %}">Add comment</a>
     {% for comment in post.comments.all %}
-        {% if user.is_authenticated or comment.approved_comment %}
-        <div class="comment">
-            <div class="date">
-                {{ comment.created_date }}
-                {% if not comment.approved_comment %}
-                    <a class="btn btn-default" href="{% url 'comment_remove' pk=comment.pk %}"><span class="glyphicon glyphicon-remove"></span></a>
-                    <a class="btn btn-default" href="{% url 'comment_approve' pk=comment.pk %}"><span class="glyphicon glyphicon-ok"></span></a>
-                {% endif %}
-            </div>
-            <strong>{{ comment.author }}</strong>
-            <p>{{ comment.text|linebreaks }}</p>
-        </div>
-        {% endif %}
+
+            <div class="row">
+                <div class="col-sm-1">
+                    <div class="thumbnail">
+                        <img class="img-responsive user-photo" src="https://ssl.gstatic.com/accounts/ui/avatar_2x.png">
+                    </div><!-- /thumbnail -->
+                </div><!-- /col-sm-1 -->
+
+                <div class="col-sm-10">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            <strong>{{comment.author}}</strong> <span class="text-muted">commented {{comment.created_date|timesince}} ago</span>
+                            {% if user == comment.author %}
+                                <a href="{% url 'comment_remove' pk=comment.pk %}"><span class="glyphicon glyphicon-trash"></span></a>
+                            {% endif %}
+                        </div>
+                        <div class="panel-body">
+                            {{comment.text}}
+                        </div><!-- /panel-body -->
+                    </div><!-- /panel panel-default -->
+                </div><!-- /col-sm-5 -->
+            </div><!-- /row -->
     {% empty %}
         <p>No comments here yet :(</p>
     {% endfor %}
+    {% endif %}
 {% endblock %}
